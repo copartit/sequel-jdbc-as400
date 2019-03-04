@@ -71,18 +71,22 @@ module Sequel
         Sequel::Deprecation.deprecate_constant(self, :ROWS_ONLY)
 
         # Modify the sql to limit the number of rows returned
-        def select_limit_sql(sql) # rubocop:disable MethodLength
-          if o = @opts[:offset]
+        def select_limit_sql(sql)
+          if (o = @opts[:offset])
             sql << ' OFFSET '
             literal_append(sql, o)
             sql << ' ROWS'
           end
-
-          return unless l = @opts[:limit]
+          return unless (l = @opts[:limit])
 
           sql << ' FETCH FIRST '
           literal_append(sql, l)
           sql << ' ROWS ONLY'
+        end
+
+        # AS400 does not support multiple column IN/NOT IN
+        def supports_multiple_column_in?
+          false
         end
 
         def supports_window_functions?
