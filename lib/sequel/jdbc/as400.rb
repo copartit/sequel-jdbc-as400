@@ -7,9 +7,6 @@ require 'jdbc/jt400'
 Jdbc::JT400.load_driver
 
 Sequel.require 'adapters/jdbc/transactions'
-# below file is sort of hacky in the sense that it is technically outside the scope of
-# sequel/jdbc/as400, but needs to be patched only when using DB2
-require_relative '../database/connecting'
 
 module Sequel
   module JDBC
@@ -59,6 +56,14 @@ module Sequel
         def begin_transaction(conn, opts = OPTS)
           set_transaction_isolation(conn, opts)
           super
+        end
+
+        # The SQL query to issue to check if a connection is valid.
+        # Sequel generally uses SELECT NULL, which is not valid on DB2.
+        # DB2 requires a FROM statement for all queries, so we must use
+        # the sysibm.sysdummy1 table to emulate the behavior.
+        def valid_connection_sql
+          @valid_connection_sql ||= select(1).from(Sequel[:sysibm][:sysdummy1]).sql
         end
       end
 
