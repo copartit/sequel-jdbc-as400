@@ -7,6 +7,9 @@ require 'jdbc/jt400'
 Jdbc::JT400.load_driver
 
 Sequel.require 'adapters/jdbc/transactions'
+# below file is sort of hacky in the sense that it is technically outside the scope of
+# sequel/jdbc/as400, but needs to be patched only when using DB2
+require_relative '../database/connecting'
 
 module Sequel
   module JDBC
